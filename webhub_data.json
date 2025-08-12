@@ -1,0 +1,105 @@
+// Импорт данных
+function importData() {
+  importFile.click();
+}
+
+importFile.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      // 1. Проверяем содержимое файла
+      const fileContent = e.target.result;
+      
+      // 2. Пытаемся распарсить JSON
+      let importedData;
+      try {
+        importedData = JSON.parse(fileContent);
+      } catch (parseError) {
+        // Показываем конкретную ошибку парсинга
+        const errorLine = parseError.message.match(/position\s(\d+)/)?.[1] || 'неизвестно';
+        showStatus('error', `Ошибка JSON: ${parseError.message}<br>Строка: ${errorLine}`);
+        importFile.value = '';
+        return;
+      }
+      
+      // 3. Проверяем структуру
+      if (!importedData.user) {
+        throw new Error('Отсутствует обязательное поле "user"');
+      }
+      
+      if (!importedData.storages || !Array.isArray(importedData.storages)) {
+        throw new Error('Отсутствует или неверный формат поля "storages"');
+      }
+      
+      // 4. Проверяем каждое хранилище
+      for (let i = 0; i < importedData.storages.length; i++) {
+        const storage = importedData.storages[i];
+        
+        if (!storage.type || !['main', 'tank'].includes(storage.type)) {
+          throw new Error(`Неверный тип хранилища в элементе ${i}`);
+        }
+        
+        if (typeof storage.index !== 'number') {
+          throw new Error(`Неверный индекс хранилища в элементе ${i}`);
+        }
+        
+        if (!Array.isArray(storage.items)) {
+          throw new Error(`Поле "items" должно быть массивом в элементе ${i}`);
+        }
+      }
+      
+      // 5. Восстанавливаем данные
+      memoryData.user = importedData.user;
+      memoryData.storages = [];
+      
+      for (let i = 0; i < importedData.storages.length; i++) {
+        const storageData = importedData.storages[i];
+        
+        if (storageData.type === 'main') {
+          memoryData.storages.push({
+            storage: { index: storageData.index, type: 'main' },
+             {
+              id: `v${storageData.index}`,
+              max_size: STORAGE_CONFIG.MAIN.size,
+              used: 0,
+              items: storageData.items
+            },
+            label: `Основное #${storageData.index}`
+          });
+        } else if (storageData.type === 'tank') {
+          memoryData.storages.push({
+            storage: { index: storageData.index, type: 'tank' },
+             {
+              id: `tank_${storageData.index}`,
+              max_size: STORAGE_CONFIG.TANK.size,
+              used: 0,
+              items: storageData.items
+            },
+            label: `ТАНК #${storageData.index}`
+          });
+        }
+      }
+      
+      // 6. Обновляем интерфейс
+      const { storage } = findNextAvailableStorage();
+      switchToStorage(storage);
+      populateStorageSelector();
+      renderContent();
+      
+      showStatus('success', '✅ Данные успешно импортированы!');
+    } catch (err) {
+      showStatus('error', `Ошибка импорта:<br>${err.message}`);
+    }
+    
+    importFile.value = '';
+  };
+  
+  reader.onerror = () => {
+    showStatus('error', 'Ошибка чтения файла. Попробуйте другой файл.');
+  };
+  
+  reader.readAsText(file, 'UTF-8'); // Явно указываем кодировку
+});

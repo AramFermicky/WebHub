@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebHub</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+    
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f0f4f8;
+      color: #2d3748;
+      line-height: 1.6;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    h1 {
+      font-size: 2.8rem;
+      background: linear-gradient(90deg, #4b6cb7, #182848);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .subtitle {
+      color: #555;
+      max-width: 700px;
+      margin: 0 auto 20px;
+    }
+    
+    .status {
+      padding: 12px 15px;
+      border-radius: 8px;
+      font-weight: 600;
+      text-align: center;
+      margin: 15px 0;
+      display: none;
+    }
+    
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .status.warn {
+      background: #fff3cd;
+      color: #856404;
+    }
+    
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    
+    .storage-info {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 25px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    .storage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .storage-name {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    
+    .storage-usage {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .usage-text {
+      font-size: 0.95rem;
+      color: #4a5568;
+      min-width: 150px;
+    }
+    
+    progress {
+      width: 100%;
+      height: 10px;
+      border-radius: 5px;
+      background: #e2e8f0;
+    }
+    
+    progress::-webkit-progress-value {
+      border-radius: 5px;
+      background: linear-gradient(90deg, #4b6cb7, #182848);
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 5px;
+    }
+    
+    .tab-btn {
+      padding: 12px 20px;
+      background: #edf2f7;
+      border: none;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    
+    .tab-btn.active {
+      background: white;
+      color: #4b6cb7;
+      box-shadow: 0 -2px 0 #4b6cb7 inset;
+    }
+    
+    .tab-content {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    .input-section {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    
+    @media (max-width: 768px) {
+      .input-section {
+        flex-direction: column;
+      }
+    }
+    
+    .url-input {
+      flex: 1;
+      min-width: 300px;
+      padding: 14px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    
+    .url-input:focus {
+      border-color: #4b6cb7;
+      outline: none;
+    }
+    
+    .add-btn {
+      background: linear-gradient(135deg, #4b6cb7, #182848);
+      color: white;
+      border: none;
+      padding: 0 22px;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .storage-controls {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin: 25px 0;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #4b6cb7, #182848);
+      color: white;
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #27ae60, #216144);
+      color: white;
+    }
+    
+    .btn-danger {
+      background: linear-gradient(135deg, #e74c3c, #a93226);
+      color: white;
+    }
+    
+    .content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
+    .content-item {
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      transition: transform 0.2s;
+    }
+    
+    .content-item:hover {
+      transform: translateY(-3px);
+    }
+    
+    .content-preview {
+      width: 100%;
+      height: 160px;
+      background-color: #f0f4f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    
+    .content-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .content-info {
+      padding: 15px;
+    }
+    
+    .content-title {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      color: #2d3748;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    
+    .content-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #edf2f7;
+      color: #718096;
+      font-size: 0.85rem;
+    }
+    
+    .storage-tag {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .storage-tag.main {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+    
+    .storage-tag.tank {
+      background: #fff8e1;
+      color: #e65100;
+    }
+    
+    .storage-tag.custom {
+      background: #e8f5e9;
+      color: #388e3c;
+    }
+    
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 40px 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    
+    .protocol-warning {
+      background: #fff8e1;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+    }
+    
+    .protocol-warning h3 {
+      color: #e65100;
+      margin-bottom: 10px;
+    }
+    
+    .protocol-warning ul {
+      padding-left: 20px;
+      margin-top: 10px;
+    }
+    
+    .protocol-warning li {
+      margin-bottom: 5px;
+    }
+    
+    .protocol-warning code {
+      background: #f8f9fa;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>WebHub</h1>
+      <p class="subtitle">Система управления JSON-хранилищами</p>
+      
+      <!-- Предупреждение для file:// -->
+      <div class="protocol-warning" id="protocolWarning">
+        <h3>⚠️ Внимание: Запущено через file://</h3>
+        <p>Для полноценной работы WebHub требуется локальный сервер. Без него:</p>
+        <ul>
+          <li>Невозможно загрузить JSON-файлы автоматически</li>
+          <li>Нужно вручную создать хранилища</li>
+        </ul>
+        <p>Как запустить локальный сервер:</p>
+        <ol>
+          <li>Откройте терминал в папке с WebHub.html</li>
+          <li>Выполните команду: <code>python -m http.server 8000</code></li>
+          <li>Откройте: <a href="http://localhost:8000" target="_blank">http://localhost:8000</a></li>
+        </ol>
+      </div>
+      
+      <div id="status-success" class="status success">Данные добавлены</div>
+      <div id="status-warn" class="status warn">Хранилище почти заполнено</div>
+      <div id="status-error" class="status error">Ошибка загрузки хранилищ</div>
+    </header>
+    
+    <div class="storage-info" id="storageInfo">
+      <div class="storage-header">
+        <div>
+          <span class="storage-name">Текущее хранилище: <span id="currentStorageName">storage_v1.json</span></span>
+        </div>
+        <div class="storage-controls">
+          <select id="storageSelector" style="padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <!-- Заполнится динамически -->
+          </select>
+        </div>
+      </div>
+      
+      <div class="storage-usage">
+        <div class="usage-text"><span id="storageUsage">0 / 15 МБ</span></div>
+        <progress id="storageProgress" value="0" max="100"></progress>
+      </div>
+    </div>
+    
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="url">Добавить ссылку</button>
+      <button class="tab-btn" data-tab="file">Загрузить файл</button>
+    </div>
+    
+    <div id="urlTab" class="tab-content" style="display: block;">
+      <div class="input-section">
+        <input 
+          type="url" 
+          id="urlInput" 
+          class="url-input" 
+          placeholder="Введите URL (YouTube, сайт, PDF...)" 
+          required
+        >
+        <button type="button" id="addUrlBtn" class="add-btn">
+          <span>➕</span> Добавить
+        </button>
+      </div>
+    </div>
+    
+    <div id="fileTab" class="tab-content" style="display: none;">
+      <div class="input-section">
+        <input type="file" id="fileInput" class="url-input">
+        <button type="button" id="uploadBtn" class="add-btn">
+          <span>📁</span> Загрузить
+        </button>
+      </div>
+      <p style="color: #718096; margin-top: 15px; font-size: 0.9rem;">
+        Для медиафайлов >10 МБ используйте танковые хранилища
+      </p>
+    </div>
+    
+    <div class="storage-controls">
+      <button id="exportBtn" class="btn btn-success">
+        <span>📦</span> Экспорт в webhub_data.json
+      </button>
+      <button id="importBtn" class="btn btn-primary">
+        <span>📥</span> Импорт из webhub_data.json
+        <input type="file" id="importFile" style="display: none;" accept=".json">
+      </button>
+      <button id="addCustomStorageBtn" class="btn btn-primary">
+        <span>➕</span> Добавить кастомное хранилище
+      </button>
+      <button id="clearBtn" class="btn btn-danger">
+        <span>🧹</span> Очистить память
+      </button>
+    </div>
+    
+    <main class="content-grid" id="contentContainer">
+      <div class="empty-state">
+        <h2>Пусто</h2>
+        <p>Добавьте ссылку или файл, чтобы начать работу</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Элементы интерфейса
+      const urlInput = document.getElementById('urlInput');
+      const addUrlBtn = document.getElementById('addUrlBtn');
+      const fileInput = document.getElementById('fileInput');
+      const uploadBtn = document.getElementById('uploadBtn');
+      const exportBtn = document.getElementById('exportBtn');
+      const importBtn = document.getElementById('importBtn');
+      const addCustomStorageBtn = document.getElementById('addCustomStorageBtn');
+      const importFile = document.getElementById('importFile');
+      const clearBtn = document.getElementById('clearBtn');
+      const contentContainer = document.getElementById('contentContainer');
+      const storageSelector = document.getElementById('storageSelector');
+      const currentStorageName = document.getElementById('currentStorageName');
+      const storageUsage = document.getElementById('storageUsage');
+      const storageProgress = document.getElementById('storageProgress');
+      const statusSuccess = document.getElementById('status-success');
+      const statusWarn = document.getElementById('status-warn');
+      const statusError = document.getElementById('status-error');
+      const protocolWarning = document.getElementById('protocolWarning');
+      const storageInfo = document.getElementById('storageInfo');
+
+      // Конфигурация хранилищ
+      const STORAGE_CONFIG = {
+        MAIN: {
+          count: 7,
+          size: 15 * 1024 * 1024, // 15 МБ
+          prefix: 'storage_v',
+          extension: '.json',
+          type: 'main'
+        },
+        TANK: {
+          count: 2,
+          size: 45 * 1024 * 1024, // 45 МБ
+          prefix: 'tank_storage_',
+          extension: '.json',
+          type: 'tank'
+        }
+      };
+
+      // Текущее хранилище
+      let currentStorage = {
+        index: 1,
+        type: 'main'
+      };
+
+      // Данные в памяти (НЕ в localStorage!)
+      let memoryData = {
+        user: null,
+        storages: []
+      };
+
+      // Проверка протокола
+      const isFileProtocol = window.location.protocol === 'file:';
+      
+      if (isFileProtocol) {
+        protocolWarning.style.display = 'block';
+      } else {
+        protocolWarning.style.display = 'none';
+      }
+
+      // Утилиты
+      function showStatus(type, message) {
+        statusSuccess.style.display = 'none';
+        statusWarn.style.display = 'none';
+        statusError.style.display = 'none';
+        
+        if (type === 'success') {
+          statusSuccess.textContent = message;
+          statusSuccess.style.display = 'block';
+          setTimeout(() => statusSuccess.style.display = 'none', 3000);
+        } else if (type === 'warn') {
+          statusWarn.textContent = message;
+          statusWarn.style.display = 'block';
+          setTimeout(() => statusWarn.style.display = 'none', 5000);
+        } else if (type === 'error') {
+          statusError.textContent = message;
+          statusError.style.display = 'block';
+          setTimeout(() => statusError.style.display = 'none', 7000);
+        }
+      }
+
+      function getStorageKey(storage) {
+        const config = STORAGE_CONFIG[storage.type.toUpperCase()];
+        return `${config.prefix}${storage.index}${config.extension}`;
+      }
+
+      function getStorageLabel(storage) {
+        if (storage.custom) {
+          return `Кастомное: ${storage.customName.replace('storage_', '').replace('.json', '')}`;
+        }
+        
+        const config = STORAGE_CONFIG[storage.type.toUpperCase()];
+        return `${config.type === 'main' ? 'Основное' : 'ТАНК'} #${storage.index}`;
+      }
+
+      // Загрузка user.json
+      async function loadUser() {
+        try {
+          const response = await fetch('user.json');
+          if (!response.ok) throw new Error('user.json не найден');
+          memoryData.user = await response.json();
+          return memoryData.user;
+        } catch (e) {
+          // Создаем дефолтный user.json если его нет
+          memoryData.user = {
+            name: "Пользователь",
+            created: new Date().toISOString(),
+            settings: {
+              theme: "light",
+              language: "ru"
+            }
+          };
+          showStatus('warn', 'Создан новый user.json (сохраните его вручную)');
+          return memoryData.user;
+        }
+      }
+
+      // Загрузка всех хранилищ
+      async function loadAllStorages() {
+        memoryData.storages = [];
+        
+        // Загружаем основные хранилища
+        for (let i = 1; i <= STORAGE_CONFIG.MAIN.count; i++) {
+          try {
+            const storage = { index: i, type: 'main' };
+            const key = getStorageKey(storage);
+            const response = await fetch(key);
+            
+            if (response.ok) {
+              const data = await response.json();
+              memoryData.storages.push({
+                storage,
+                data,
+                label: getStorageLabel(storage)
+              });
+            } else {
+              // Создаем новое хранилище если его нет
+              memoryData.storages.push({
+                storage,
+                 {
+                  id: `v${i}`,
+                  max_size: STORAGE_CONFIG.MAIN.size,
+                  used: 0,
+                  items: []
+                },
+                label: getStorageLabel(storage)
+              });
+            }
+          } catch (e) {
+            console.log(`Ошибка загрузки ${getStorageKey({index: i, type: 'main'})}:`, e);
+          }
+        }
+        
+        // Загружаем танковые хранилища
+        for (let i = 1; i <= STORAGE_CONFIG.TANK.count; i++) {
+          try {
+            const storage = { index: i, type: 'tank' };
+            const key = getStorageKey(storage);
+            const response = await fetch(key);
+            
+            if (response.ok) {
+              const data = await response.json();
+              memoryData.storages.push({
+                storage,
+                data,
+                label: getStorageLabel(storage)
+              });
+            } else {
+              // Создаем новое хранилище если его нет
+              memoryData.storages.push({
+                storage,
+                 {
+                  id: `tank_${i}`,
+                  max_size: STORAGE_CONFIG.TANK.size,
+                  used: 0,
+                  items: []
+                },
+                label: getStorageLabel(storage)
+              });
+            }
+          } catch (e) {
+            console.log(`Ошибка загрузки ${getStorageKey({index: i, type: 'tank'})}:`, e);
+          }
+        }
+        
+        // Найти первое доступное хранилище
+        const { storage } = findNextAvailableStorage();
+        switchToStorage(storage);
+        populateStorageSelector();
+      }
+
+      // Поиск следующего доступного хранилища
+      function findNextAvailableStorage() {
+        for (const storage of memoryData.storages) {
+          const usage = new Blob([JSON.stringify(storage.data.items)]).size;
+          const maxSize = storage.data.max_size;
+          const percent = (usage / maxSize) * 100;
+          
+          if (percent < 95) {
+            return storage;
+          }
+        }
+        
+        // Если все заполнены, возвращаем последнее
+        return memoryData.storages[memoryData.storages.length - 1];
+      }
+
+      // Переключение на хранилище
+      function switchToStorage(storageObj) {
+        currentStorage = storageObj.storage;
+        updateStorageDisplay(storageObj);
+      }
+
+      // Обновление отображения хранилища
+      function updateStorageDisplay(storageObj) {
+        currentStorageName.textContent = getStorageKey(storageObj.storage);
+        
+        const usage = new Blob([JSON.stringify(storageObj.data.items)]).size;
+        const maxSize = storageObj.data.max_size;
+        const percent = Math.min(100, (usage / maxSize) * 100);
+        
+        storageUsage.textContent = `${(usage / 1024 / 1024).toFixed(1)} / ${(maxSize / 1024 / 1024).toFixed(0)} МБ`;
+        storageProgress.value = percent;
+        
+        if (percent > 90) {
+          showStatus('warn', 'Хранилище почти заполнено!');
+        }
+      }
+
+      // Заполнение селектора хранилищ
+      function populateStorageSelector() {
+        storageSelector.innerHTML = '';
+        
+        memoryData.storages.forEach((storage, index) => {
+          const option = document.createElement('option');
+          option.value = index;
+          option.textContent = `${storage.label} (${(new Blob([JSON.stringify(storage.data.items)]).size / 1024 / 1024).toFixed(1)} / ${(storage.data.max_size / 1024 / 1024).toFixed(0)} МБ)`;
+          if (storage.storage.index === currentStorage.index && storage.storage.type === currentStorage.type) {
+            option.selected = true;
+          }
+          storageSelector.appendChild(option);
+        });
+        
+        // Добавляем опцию для добавления нового хранилища
+        const addOption = document.createElement('option');
+        addOption.value = 'add-new';
+        addOption.textContent = '+ Добавить новое хранилище';
+        storageSelector.appendChild(addOption);
+      }
+
+      // Отображение контента
+      function renderContent() {
+        contentContainer.innerHTML = '';
+        
+        let hasContent = false;
+        
+        memoryData.storages.forEach(storage => {
+          storage.data.items.forEach(item => {
+            hasContent = true;
+            
+            const itemElement = document.createElement('div');
+            itemElement.className = 'content-item';
+            
+            // Определяем тип тега
+            let tagClass = 'main';
+            if (storage.storage.type === 'tank') tagClass = 'tank';
+            if (storage.storage.custom) tagClass = 'custom';
+            
+            itemElement.innerHTML = `
+              <div class="content-preview">
+                <div style="font-size: 3rem; color: ${tagClass === 'main' ? '#4b6cb7' : tagClass === 'tank' ? '#e67e22' : '#388e3c'};">
+                  ${tagClass === 'main' ? '📦' : tagClass === 'tank' ? '🛢️' : '🗃️'}
+                </div>
+              </div>
+              <div class="content-info">
+                <h2 class="content-title">${item.title || item.name || 'Без названия'}</h2>
+                <div class="content-meta">
+                  <span>${new Date(item.added).toLocaleDateString('ru-RU')}</span>
+                  <span class="storage-tag ${tagClass}">
+                    ${storage.label}
+                  </span>
+                </div>
+              </div>
+            `;
+            
+            contentContainer.appendChild(itemElement);
+          });
+        });
+        
+        if (!hasContent) {
+          contentContainer.innerHTML = `
+            <div class="empty-state">
+              <h2>Пусто</h2>
+              <p>Добавьте ссылку или файл, чтобы начать работу</p>
+            </div>
+          `;
+        }
+      }
+
+      // Добавление кастомного хранилища
+      function addCustomStorage() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+          
+          // Проверка имени файла
+          if (!file.name.startsWith('storage_')) {
+            showStatus('error', 'Ошибка: файл должен начинаться с "storage_"');
+            return;
+          }
+          
+          if (!file.name.endsWith('.json')) {
+            showStatus('error', 'Ошибка: файл должен иметь расширение .json');
+            return;
+          }
+          
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            try {
+              const data = JSON.parse(e.target.result);
+              
+              // Проверка структуры
+              if (typeof data.max_size !== 'number' || !Array.isArray(data.items)) {
+                throw new Error('Неверная структура хранилища');
+              }
+              
+              // Добавляем в память
+              memoryData.storages.push({
+                storage: { 
+                  index: memoryData.storages.length + 1, 
+                  type: 'custom',
+                  custom: true,
+                  customName: file.name
+                },
+                data,
+                label: `Кастомное: ${file.name.replace('storage_', '').replace('.json', '')}`
+              });
+              
+              // Обновляем интерфейс
+              populateStorageSelector();
+              showStatus('success', `Новое хранилище добавлено: ${file.name}`);
+            } catch (err) {
+              showStatus('error', `Ошибка обработки файла: ${err.message}`);
+            }
+          };
+          
+          reader.onerror = () => {
+            showStatus('error', 'Ошибка чтения файла');
+          };
+          
+          reader.readAsText(file, 'UTF-8');
+        };
+        
+        input.click();
+      }
+
+      // Экспорт данных
+      function exportData() {
+        if (memoryData.storages.length === 0) {
+          showStatus('error', 'Нет данных для экспорта');
+          return;
+        }
+        
+        const exportData = {
+          meta: {
+            version: "1.0",
+            exported: new Date().toISOString(),
+            main_storages: STORAGE_CONFIG.MAIN.count,
+            main_size: STORAGE_CONFIG.MAIN.size,
+            tank_storages: STORAGE_CONFIG.TANK.count,
+            tank_size: STORAGE_CONFIG.TANK.size
+          },
+          user: memoryData.user,
+          storages: memoryData.storages.map(s => ({
+            type: s.storage.type,
+            index: s.storage.index,
+            custom: s.storage.custom || false,
+            customName: s.storage.customName || null,
+            items: s.data.items
+          }))
+        };
+        
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `webhub_data_${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+        
+        URL.revokeObjectURL(url);
+        showStatus('success', 'Данные экспортированы в webhub_data.json');
+      }
+
+      // Импорт данных
+      function importData() {
+        importFile.click();
+      }
+
+      importFile.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          try {
+            const importedData = JSON.parse(e.target.result);
+            
+            // Проверка структуры
+            if (!importedData.user || !importedData.storages) {
+              throw new Error('Неверный формат файла');
+            }
+            
+            memoryData.user = importedData.user;
+            memoryData.storages = [];
+            
+            for (let i = 0; i < importedData.storages.length; i++) {
+              const storageData = importedData.storages[i];
+              
+              if (storageData.type === 'main' || storageData.type === 'tank' || storageData.type === 'custom') {
+                let label = '';
+                if (storageData.type === 'main') {
+                  label = `Основное #${storageData.index}`;
+                } else if (storageData.type === 'tank') {
+                  label = `ТАНК #${storageData.index}`;
+                } else {
+                  label = `Кастомное: ${storageData.customName.replace('storage_', '').replace('.json', '')}`;
+                }
+                
+                memoryData.storages.push({
+                  storage: { 
+                    index: storageData.index, 
+                    type: storageData.type,
+                    custom: storageData.custom || false,
+                    customName: storageData.customName || null
+                  },
+                   {
+                    id: storageData.type === 'main' ? `v${storageData.index}` : 
+                         storageData.type === 'tank' ? `tank_${storageData.index}` : 'custom',
+                    max_size: storageData.type === 'main' ? STORAGE_CONFIG.MAIN.size :
+                             storageData.type === 'tank' ? STORAGE_CONFIG.TANK.size : 0,
+                    used: 0,
+                    items: storageData.items
+                  },
+                  label: label
+                });
+              }
+            }
+            
+            // Обновляем интерфейс
+            const { storage } = findNextAvailableStorage();
+            switchToStorage(storage);
+            populateStorageSelector();
+            renderContent();
+            
+            showStatus('success', '✅ Данные успешно импортированы!');
+          } catch (err) {
+            showStatus('error', `Ошибка импорта:<br>${err.message}`);
+          }
+          
+          importFile.value = '';
+        };
+        
+        reader.onerror = () => {
+          showStatus('error', 'Ошибка чтения файла. Попробуйте другой файл.');
+        };
+        
+        reader.readAsText(file, 'UTF-8');
+      });
+
+      // Очистка памяти
+      function clearMemory() {
+        if (confirm('Очистить ВСЕ данные из памяти? Это не удалит файлы на сервере!')) {
+          memoryData = {
+            user: memoryData.user,
+            storages: []
+          };
+          
+          // Перезагружаем хранилища
+          loadAllStorages().then(() => {
+            renderContent();
+          });
+          
+          showStatus('success', 'Память приложения очищена');
+        }
+      }
+
+      // Добавление ссылки
+      function addUrl() {
+        if (memoryData.storages.length === 0) {
+          showStatus('error', 'Сначала загрузите хранилища');
+          return;
+        }
+        
+        const url = urlInput.value.trim();
+        if (!url) {
+          showStatus('warn', 'Введите корректный URL');
+          return;
+        }
+        
+        try {
+          new URL(url);
+        } catch {
+          showStatus('warn', 'Некорректный URL. Добавьте http:// или https://');
+          return;
+        }
+        
+        const title = new URL(url).hostname.replace('www.', '');
+        const newItem = {
+          type: 'url',
+          url,
+          title,
+          added: new Date().toISOString()
+        };
+        
+        // Находим текущее хранилище в памяти
+        const currentStorageObj = memoryData.storages.find(s => 
+          s.storage.index === currentStorage.index && s.storage.type === currentStorage.type
+        );
+        
+        if (!currentStorageObj) {
+          showStatus('error', 'Текущее хранилище не найдено');
+          return;
+        }
+        
+        // Проверяем, поместится ли элемент
+        const testItems = [...currentStorageObj.data.items, newItem];
+        const testUsage = new Blob([JSON.stringify(testItems)]).size;
+        
+        if (testUsage > currentStorageObj.data.max_size * 0.95) {
+          // Ищем следующее доступное хранилище
+          const nextStorage = findNextAvailableStorage();
+          
+          if (nextStorage.storage.index === currentStorage.index && 
+              nextStorage.storage.type === currentStorage.type) {
+            showStatus('error', 'Все хранилища заполнены! Экспортируйте данные.');
+            return;
+          }
+          
+          // Переключаемся на следующее хранилище
+          switchToStorage(nextStorage);
+          currentStorageObj = memoryData.storages.find(s => 
+            s.storage.index === currentStorage.index && s.storage.type === currentStorage.type
+          );
+          
+          currentStorageObj.data.items.push(newItem);
+          
+          showStatus('warn', `Данные сохранены в ${getStorageLabel(nextStorage.storage)}`);
+        } else {
+          currentStorageObj.data.items.push(newItem);
+        }
+        
+        // Обновляем интерфейс
+        updateStorageDisplay(currentStorageObj);
+        renderContent();
+        showStatus('success', 'Ссылка добавлена в память приложения');
+        urlInput.value = '';
+      }
+
+      // Загрузка файла
+      function uploadFile() {
+        if (memoryData.storages.length === 0) {
+          showStatus('error', 'Сначала загрузите хранилища');
+          return;
+        }
+        
+        const file = fileInput.files[0];
+        if (!file) {
+          showStatus('warn', 'Выберите файл');
+          return;
+        }
+        
+        // Для больших файлов рекомендуем танковые хранилища
+        if (file.size > 10 * 1024 * 1024 && currentStorage.type === 'main') {
+          if (confirm(`Файл "${file.name}" (${(file.size / 1024 / 1024).toFixed(1)} МБ) лучше сохранить в танковом хранилище. Переключиться?`)) {
+            // Ищем первое доступное танковое хранилище
+            const tankStorage = memoryData.storages.find(s => 
+              s.storage.type === 'tank' && 
+              (new Blob([JSON.stringify([...s.data.items, {}])]).size < s.data.max_size * 0.95)
+            );
+            
+            if (tankStorage) {
+              switchToStorage(tankStorage);
+            } else {
+              showStatus('warn', 'Нет доступных танковых хранилищ');
+            }
+          }
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const newItem = {
+            type: 'file',
+            name: file.name,
+            type: file.type,
+            size: file.size,
+             e.target.result,
+            added: new Date().toISOString()
+          };
+          
+          // Находим текущее хранилище в памяти
+          const currentStorageObj = memoryData.storages.find(s => 
+            s.storage.index === currentStorage.index && s.storage.type === currentStorage.type
+          );
+          
+          if (!currentStorageObj) {
+            showStatus('error', 'Текущее хранилище не найдено');
+            return;
+          }
+          
+          // Проверяем, поместится ли элемент
+          const testItems = [...currentStorageObj.data.items, newItem];
+          const testUsage = new Blob([JSON.stringify(testItems)]).size;
+          
+          if (testUsage > currentStorageObj.data.max_size * 0.95) {
+            showStatus('error', 'Хранилище заполнено! Выберите другое хранилище.');
+            return;
+          }
+          
+          // Добавляем элемент
+          currentStorageObj.data.items.push(newItem);
+          
+          // Обновляем интерфейс
+          updateStorageDisplay(currentStorageObj);
+          renderContent();
+          showStatus('success', 'Файл добавлен в память приложения');
+          fileInput.value = '';
+        };
+        
+        reader.onerror = () => {
+          showStatus('error', 'Ошибка чтения файла');
+        };
+        
+        reader.readAsDataURL(file);
+      }
+
+      // Инициализация
+      async function init() {
+        try {
+          // Загружаем user.json
+          await loadUser();
+          
+          // Загружаем все хранилища
+          await loadAllStorages();
+          
+          // Отображаем контент
+          renderContent();
+          
+          // Переключение вкладок
+          document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+              document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+              document.getElementById(`${btn.getAttribute('data-tab')}Tab`).style.display = 'block';
+            });
+          });
+          
+          // Селектор хранилищ
+          storageSelector.addEventListener('change', (e) => {
+            const value = e.target.value;
+            
+            if (value === 'add-new') {
+              // Сбрасываем выбор, чтобы не оставалось на этой опции
+              e.target.selectedIndex = 0;
+              addCustomStorage();
+            } else {
+              const index = parseInt(value);
+              switchToStorage(memoryData.storages[index]);
+            }
+          });
+          
+          // Назначаем обработчики
+          addUrlBtn.addEventListener('click', addUrl);
+          uploadBtn.addEventListener('click', uploadFile);
+          exportBtn.addEventListener('click', exportData);
+          importBtn.addEventListener('click', importData);
+          addCustomStorageBtn.addEventListener('click', addCustomStorage);
+          clearBtn.addEventListener('click', clearMemory);
+          
+          showStatus('success', 'WebHub готов к работе');
+        } catch (error) {
+          showStatus('error', `Ошибка инициализации: ${error.message}`);
+          console.error('Ошибка инициализации:', error);
+        }
+      }
+
+      // Запускаем инициализацию
+      init();
+    });
+  </script>
+</body>
+</html>
